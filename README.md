@@ -1,171 +1,185 @@
-# 🚀 MercadoLibre Scraper - Argentina
+# 🚀 Scraper MercadoLibre Argentina
 
-**Scraper profesional** para MercadoLibre Argentina desarrollado con **requests + BeautifulSoup** y **interfaz gráfica Tkinter**.
+**Scraper profesional** para extraer productos de MercadoLibre Argentina usando **requests + BeautifulSoup** con interfaz gráfica **Tkinter**.
 
 ## ✨ Características
 
-- 🔍 **Búsqueda avanzada** con múltiples filtros
-- 💰 **Filtros de precio** (mínimo y máximo)
-- 📱 **Filtros de condición** (nuevo, usado, reacondicionado)
-- 📊 **Ordenamiento** por relevancia, precio ascendente/descendente
-- 📄 **Paginación** configurable (hasta 20 páginas)
-- 📁 **Exportación** a CSV y Excel
-- 🎨 **Interfaz gráfica** moderna y intuitiva
-- 🛡️ **Anti-detección** con User-Agents rotativos
-- ⚡ **Sin dependencias** de navegadores (Chrome/Selenium)
+- 🔍 **Búsqueda inteligente**: Extrae productos por término de búsqueda
+- 💰 **Filtros de precio**: Rango mínimo y máximo personalizable
+- 📊 **Ordenamiento**: Por relevancia, precio ascendente/descendente
+- 💾 **Exportación múltiple**: CSV, Excel (XLSX) y JSON
+- 🎨 **Interfaz gráfica**: Tkinter moderno y fácil de usar
+- 🚫 **Sin Selenium**: Usa requests + BeautifulSoup (más estable)
+- 🇦🇷 **Formato argentino**: Maneja precios con separadores de miles
 
 ## 🛠️ Tecnologías
 
 - **Python 3.8+**
-- **requests** - HTTP requests
-- **BeautifulSoup4** - Parsing HTML
-- **pandas** - Manipulación de datos
-- **openpyxl** - Exportación a Excel
-- **Tkinter** - Interfaz gráfica
+- **requests**: HTTP requests
+- **BeautifulSoup4**: Parsing HTML
+- **pandas**: Manipulación de datos
+- **openpyxl**: Exportación a Excel
+- **Tkinter**: Interfaz gráfica
 
 ## 📦 Instalación
 
-### 1. Clonar/Descargar
+### 1. Clonar repositorio
 ```bash
-git clone <repository-url>
-cd MercadoLibre-Scraper
+git clone https://github.com/tu-usuario/scraper-mercadolibre.git
+cd scraper-mercadolibre
 ```
 
 ### 2. Instalar dependencias
 ```bash
-# Windows
-install.bat
-
-# Linux/Mac
 pip install -r requirements.txt
 ```
 
 ### 3. Ejecutar
 ```bash
-# Interfaz gráfica
 python main.py
+```
 
-# Solo scraper (línea de comandos)
+## 🚀 Uso
+
+### Interfaz Gráfica (Recomendado)
+```bash
+python main.py
+```
+
+### Línea de Comandos
+```bash
 python scraper.py
 ```
 
-## 🎯 Uso
+## 📋 Funcionalidades
 
-### Interfaz Gráfica
-1. **Ejecutar** `python main.py`
-2. **Configurar** parámetros de búsqueda:
-   - Término de búsqueda
-   - Número de páginas
-   - Rango de precios
-   - Condición del producto
-   - Ordenamiento
-3. **Hacer clic** en "🔍 Iniciar Búsqueda"
-4. **Exportar** resultados a CSV/Excel
+### 🔍 Búsqueda
+- **Término**: Cualquier producto (notebook, celular, etc.)
+- **Páginas**: Hasta 10 páginas (configurable)
+- **Filtros**: Precio mínimo y máximo
+- **Orden**: Relevancia, precio ↑↓
 
-### Línea de Comandos
+### 💾 Exportación
+- **CSV**: Formato estándar con encoding UTF-8
+- **Excel**: Archivo .xlsx con formato profesional
+- **JSON**: Estructura de datos completa
+
+### 📊 Datos Extraídos
+- **Título**: Nombre completo del producto
+- **Precio**: Precio limpio en pesos argentinos
+- **URL**: Enlace directo al producto
+
+## 🎯 Ejemplos de Uso
+
+### Búsqueda Básica
 ```python
 from scraper import MercadoLibreScraper
 
 scraper = MercadoLibreScraper()
-
-# Búsqueda básica
 products = scraper.search_products(
     query="notebook",
     max_pages=3
 )
-
-# Búsqueda con filtros
-products = scraper.search_products(
-    query="smartphone",
-    max_pages=5,
-    min_price=50000,
-    max_price=200000,
-    condition="nuevo",
-    sort_by="price_asc"
-)
-
-# Exportar
-scraper.export_to_csv(products, "productos.csv")
-scraper.export_to_excel(products, "productos.xlsx")
 ```
 
-## 📊 Parámetros de Búsqueda
+### Con Filtros de Precio
+```python
+products = scraper.search_products(
+    query="celular",
+    max_pages=2,
+    min_price=50000,
+    max_price=200000
+)
+```
 
-| Parámetro | Descripción | Valores |
-|-----------|-------------|---------|
-| `query` | Término de búsqueda | Texto libre |
-| `max_pages` | Máximo de páginas | 1-20 |
-| `min_price` | Precio mínimo | Número (pesos argentinos) |
-| `max_price` | Precio máximo | Número (pesos argentinos) |
-| `condition` | Condición del producto | `all`, `nuevo`, `usado` |
-| `sort_by` | Ordenamiento | `relevance`, `price_asc`, `price_desc` |
+### Exportación
+```python
+# CSV
+scraper.export_to_csv(products, "productos.csv")
+
+# Excel
+scraper.export_to_csv(products, "productos.xlsx")
+```
 
 ## 📁 Estructura del Proyecto
 
 ```
-MercadoLibre-Scraper/
-├── scraper.py          # Core del scraper
-├── main.py             # Interfaz gráfica
-├── requirements.txt    # Dependencias
-├── install.bat        # Instalador Windows
-├── README.md          # Documentación
-└── productos.csv      # Resultados exportados
+scraper-mercadolibre/
+├── main.py              # Interfaz gráfica Tkinter
+├── scraper.py           # Lógica del scraper
+├── requirements.txt     # Dependencias Python
+├── README.md           # Este archivo
+└── .gitignore          # Archivos a ignorar
 ```
 
-## 🔧 Configuración Avanzada
+## 🔧 Configuración
 
-### Personalizar User-Agents
+### Headers Personalizados
 ```python
-# En scraper.py, modificar la lista de User-Agents
-self.user_agents = [
-    'Tu User-Agent personalizado aquí',
-    # ... más User-Agents
-]
+self.session.headers.update({
+    'User-Agent': 'Tu User-Agent personalizado',
+    'Accept-Language': 'es-AR,es;q=0.8,en-US;q=0.5,en;q=0.3',
+})
 ```
 
-### Ajustar delays
+### Delays Configurables
 ```python
-# Modificar tiempos de espera entre requests
-time.sleep(random.uniform(2, 4))  # 2-4 segundos
+# Delay entre páginas (1-3 segundos)
+delay = random.uniform(1, 3)
+time.sleep(delay)
 ```
 
-## 🚨 Limitaciones y Consideraciones
+## ⚠️ Consideraciones
 
-- **Respetar robots.txt** de MercadoLibre
-- **No hacer requests excesivos** (máximo 20 páginas por búsqueda)
-- **Usar filtros** para reducir resultados
-- **Exportar datos** para análisis offline
+- **Respeto**: Usar delays razonables entre requests
+- **Términos de Servicio**: Cumplir con las políticas de MercadoLibre
+- **Uso Responsable**: No sobrecargar los servidores
+- **Propósito Educativo**: Solo para aprendizaje y uso personal
 
-## 📝 Logs
+## 🐛 Solución de Problemas
 
-El scraper genera logs detallados en `scraper.log`:
-- Requests realizados
-- Productos encontrados
-- Errores y advertencias
-- Estadísticas de uso
+### Error de Codificación
+```bash
+# En Windows, usar encoding UTF-8
+python -X utf8 main.py
+```
+
+### Dependencias Faltantes
+```bash
+pip install --upgrade -r requirements.txt
+```
+
+### Problemas de Red
+- Verificar conexión a internet
+- Revisar firewall/antivirus
+- Usar VPN si es necesario
 
 ## 🤝 Contribuciones
 
+¡Las contribuciones son bienvenidas! 
+
 1. Fork el proyecto
-2. Crear rama para feature (`git checkout -b feature/AmazingFeature`)
-3. Commit cambios (`git commit -m 'Add AmazingFeature'`)
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir Pull Request
+5. Abre un Pull Request
 
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
-## ⚠️ Disclaimer
+## 🙏 Agradecimientos
 
-Este scraper es para **uso educativo y personal**. Respeta los términos de servicio de MercadoLibre y las leyes de tu jurisdicción.
+- **MercadoLibre**: Por proporcionar la plataforma
+- **BeautifulSoup**: Por el excelente parser HTML
+- **Python Community**: Por las librerías increíbles
 
-## 🆘 Soporte
+## 📞 Contacto
 
-- **Issues**: Reportar bugs en GitHub
-- **Discussions**: Preguntas y sugerencias
-- **Wiki**: Documentación adicional
+- **GitHub**: [@tu-usuario](https://github.com/tu-usuario)
+- **Email**: tu-email@ejemplo.com
+- **Proyecto**: [Link al proyecto](https://github.com/tu-usuario/scraper-mercadolibre)
 
 ---
 
-**Desarrollado con ❤️ para la comunidad argentina**
+⭐ **¡Si te gusta el proyecto, dale una estrella en GitHub!** ⭐
