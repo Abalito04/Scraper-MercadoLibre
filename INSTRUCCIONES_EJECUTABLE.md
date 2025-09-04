@@ -28,6 +28,7 @@ El ejecutable se encuentra en la carpeta dist
 - ✅ **Portable**: Puedes copiarlo a cualquier computadora con Windows
 - ✅ **Todas las funciones**: Búsqueda, filtros, exportación a CSV/Excel/JSON
 - ✅ **Interfaz gráfica completa**: Misma funcionalidad que la versión original
+- ✅ **Filtro de ordenamiento corregido**: Ahora funciona correctamente
 
 ## 📊 Funcionalidades Disponibles
 

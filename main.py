@@ -19,6 +19,8 @@ class MercadoLibreGUI:
         # Variables
         self.products = []
         self.scraper = MercadoLibreScraper()
+        self.sort_column = None  # Columna actualmente ordenada
+        self.sort_order = "none"  # "none", "asc", "desc"
         
         # Crear interfaz
         self.create_widgets()
@@ -65,19 +67,12 @@ class MercadoLibreGUI:
         self.max_price_var = tk.StringVar()
         ttk.Entry(filters_frame, textvariable=self.max_price_var, width=15).grid(row=0, column=3, padx=(0, 10))
         
-        # Ordenamiento
-        ttk.Label(filters_frame, text="Ordenar por:").grid(row=0, column=4, sticky=tk.W, padx=(0, 5))
-        self.sort_var = tk.StringVar(value="relevance")
-        sort_combo = ttk.Combobox(filters_frame, textvariable=self.sort_var, 
-                                 values=["relevance", "price_asc", "price_desc"], width=15)
-        sort_combo.grid(row=0, column=5)
-        
         # Filtro de Condición
-        ttk.Label(filters_frame, text="Condición:").grid(row=0, column=6, sticky=tk.W, padx=(10, 5))
+        ttk.Label(filters_frame, text="Condición:").grid(row=0, column=4, sticky=tk.W, padx=(10, 5))
         self.condition_var = tk.StringVar(value="all")
         condition_combo = ttk.Combobox(filters_frame, textvariable=self.condition_var, 
                                       values=["all", "nuevo", "usado", "reacondicionado"], width=15)
-        condition_combo.grid(row=0, column=7)
+        condition_combo.grid(row=0, column=5)
         
         # Frame de resultados
         results_frame = ttk.LabelFrame(main_frame, text="Resultados", padding="10")
@@ -89,10 +84,10 @@ class MercadoLibreGUI:
         columns = ("Titulo", "Precio", "Condicion", "URL")
         self.tree = ttk.Treeview(results_frame, columns=columns, show="headings", height=15)
         
-        # Configurar columnas
-        self.tree.heading("Titulo", text="Título del Producto")
-        self.tree.heading("Precio", text="Precio")
-        self.tree.heading("Condicion", text="Condición")
+        # Configurar columnas - todas clickeables
+        self.tree.heading("Titulo", text="Título del Producto ↑↓", command=lambda: self.sort_by_column("title"))
+        self.tree.heading("Precio", text="Precio ↑↓", command=lambda: self.sort_by_column("price"))
+        self.tree.heading("Condicion", text="Condición ↑↓", command=lambda: self.sort_by_column("condition"))
         self.tree.heading("URL", text="Enlace")
         
         # Configurar ancho de columnas
@@ -153,7 +148,6 @@ class MercadoLibreGUI:
             max_pages = int(self.pages_var.get())
             min_price = self.min_price_var.get().strip()
             max_price = self.max_price_var.get().strip()
-            sort_by = self.sort_var.get()
             condition_filter = self.condition_var.get()
             
             # Convertir precios a números
@@ -166,7 +160,7 @@ class MercadoLibreGUI:
                 max_pages=max_pages,
                 min_price=min_price,
                 max_price=max_price,
-                sort_by=sort_by,
+                sort_by="relevance",  # Siempre buscar por relevancia, ordenar localmente
                 condition_filter=condition_filter
             )
             
@@ -179,6 +173,10 @@ class MercadoLibreGUI:
     def search_completed(self):
         """Búsqueda completada"""
         self.search_button.config(state="normal")
+        # Resetear ordenamiento
+        self.sort_column = None
+        self.sort_order = "none"
+        self.update_column_headers()
         self.update_results()
         
         if self.products:
@@ -191,6 +189,65 @@ class MercadoLibreGUI:
         self.search_button.config(state="normal")
         self.status_var.set("Error en la búsqueda")
         messagebox.showerror("Error", f"Error durante la búsqueda:\n{error_msg}")
+    
+    def sort_by_column(self, column):
+        """Ordenar productos por la columna especificada"""
+        if not self.products:
+            return
+        
+        # Si es la misma columna, cambiar orden; si es diferente, empezar con ascendente
+        if self.sort_column == column:
+            if self.sort_order == "asc":
+                self.sort_order = "desc"
+            else:
+                self.sort_order = "asc"
+        else:
+            self.sort_column = column
+            self.sort_order = "asc"
+        
+        # Ordenar según la columna
+        if column == "price":
+            # Ordenar por precio (numérico)
+            if self.sort_order == "asc":
+                self.products.sort(key=lambda x: x.get('price', 0) or 0)
+            else:
+                self.products.sort(key=lambda x: x.get('price', 0) or 0, reverse=True)
+        elif column == "title":
+            # Ordenar por título (alfabético)
+            if self.sort_order == "asc":
+                self.products.sort(key=lambda x: x.get('title', '').lower())
+            else:
+                self.products.sort(key=lambda x: x.get('title', '').lower(), reverse=True)
+        elif column == "condition":
+            # Ordenar por condición (agrupar)
+            if self.sort_order == "asc":
+                self.products.sort(key=lambda x: x.get('condition', '').lower())
+            else:
+                self.products.sort(key=lambda x: x.get('condition', '').lower(), reverse=True)
+        
+        # Actualizar indicadores visuales
+        self.update_column_headers()
+        
+        # Actualizar la tabla
+        self.update_results()
+    
+    def update_column_headers(self):
+        """Actualizar los indicadores visuales de las columnas"""
+        # Resetear todos los headers
+        self.tree.heading("Titulo", text="Título del Producto ↑↓")
+        self.tree.heading("Precio", text="Precio ↑↓")
+        self.tree.heading("Condicion", text="Condición ↑↓")
+        
+        # Actualizar la columna activa
+        if self.sort_column == "title":
+            arrow = "↑" if self.sort_order == "asc" else "↓"
+            self.tree.heading("Titulo", text=f"Título del Producto {arrow}")
+        elif self.sort_column == "price":
+            arrow = "↑" if self.sort_order == "asc" else "↓"
+            self.tree.heading("Precio", text=f"Precio {arrow}")
+        elif self.sort_column == "condition":
+            arrow = "↑" if self.sort_order == "asc" else "↓"
+            self.tree.heading("Condicion", text=f"Condición {arrow}")
     
     def update_results(self):
         """Actualizar tabla de resultados (4 COLUMNAS: Título, Precio, Condición, URL)"""

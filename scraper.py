@@ -25,24 +25,36 @@ class MercadoLibreScraper:
         })
     
     def _build_url(self, query, page=1, sort_by="relevance"):
-        """Construir URL de búsqueda"""
+        """Construir URL de búsqueda - VERSIÓN FINAL CORREGIDA"""
         base_url = "https://listado.mercadolibre.com.ar"
         
         # Codificar query
         encoded_query = quote_plus(query)
         
-        # Construir URL
+        # Construir URL base
         if page == 1:
             url = f"{base_url}/{encoded_query}"
         else:
             url = f"{base_url}/{encoded_query}_Desde_{(page-1)*50+1}"
         
-        # Agregar ordenamiento
+        # Agregar ordenamiento usando el formato correcto de MercadoLibre
         if sort_by == "price_asc":
-            url += "_OrderId_PRICE_ASC"
+            # Ordenar por precio ascendente - formato correcto
+            if "_Desde_" in url:
+                url += "_OrderId_PRICE_ASC"
+            else:
+                url += "_OrderId_PRICE_ASC"
         elif sort_by == "price_desc":
-            url += "_OrderId_PRICE_DESC"
+            # Ordenar por precio descendente - formato correcto
+            if "_Desde_" in url:
+                url += "_OrderId_PRICE_DESC"
+            else:
+                url += "_OrderId_PRICE_DESC"
+        elif sort_by == "relevance":
+            # Orden por relevancia (por defecto)
+            pass
         
+        print(f"URL construida: {url}")
         return url
     
     def _clean_price(self, price_text):
@@ -299,6 +311,14 @@ class MercadoLibreScraper:
             filtered_products.append(product)
         
         all_products = filtered_products
+        
+        # Ordenar localmente como respaldo si la URL no funcionó
+        if sort_by == "price_asc":
+            all_products.sort(key=lambda x: x.get('price', 0) or 0)
+            print("Productos ordenados localmente por precio ascendente")
+        elif sort_by == "price_desc":
+            all_products.sort(key=lambda x: x.get('price', 0) or 0, reverse=True)
+            print("Productos ordenados localmente por precio descendente")
         
         print(f"\nTotal productos después de filtros: {len(all_products)}")
         print(f"Filtros aplicados: Precio({min_price or 'sin límite'}-{max_price or 'sin límite'}), Condición({condition_filter})")
