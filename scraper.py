@@ -88,6 +88,106 @@ class MercadoLibreScraper:
             print(f"Error limpiando precio '{price_text}': {e}")
             return None
     
+    def _detect_condition_advanced(self, container, title, price_text):
+        """Detectar condición en múltiples lugares: título, precio, atributos, badges"""
+        try:
+            # 1. BUSCAR EN ATRIBUTOS/BADGES DE CONDICIÓN (PRIORIDAD ALTA)
+            condition_selectors = [
+                ".condition-badge",
+                ".product-condition", 
+                ".item-condition",
+                ".condition-label",
+                ".status-badge",
+                ".product-status",
+                "[data-testid*='condition']",
+                ".ui-pdp-seller__item-description",
+                ".ui-pdp-seller__item-title"
+            ]
+            
+            condition_from_badge = None
+            for selector in condition_selectors:
+                elem = container.select_one(selector)
+                if elem:
+                    badge_text = elem.get_text(strip=True).lower()
+                    if any(word in badge_text for word in ['usado', 'used', 'nuevo', 'new', 'reacondicionado']):
+                        condition_from_badge = badge_text
+                        print(f"Condición encontrada en badge: {badge_text}")
+                        break
+            
+            # 2. BUSCAR EN EL TEXTO COMPLETO DEL CONTENEDOR
+            container_text = container.get_text().lower()
+            
+            # 3. ANÁLISIS INTELIGENTE COMBINADO
+            text_to_analyze = f"{title} {price_text} {container_text}".lower()
+            
+            # Patrones para condición NUEVA
+            new_patterns = [
+                r'\b(nuevo|new|original|originales|sellado|sellados|sealed|factory|fábrica)\b',
+                r'\b(garantía|warranty|garantizado|garantizada)\b',
+                r'\b(estado perfecto|perfect condition|mint|excelente)\b'
+            ]
+            
+            # Patrones para condición USADA
+            used_patterns = [
+                r'\b(usado|used|segunda mano|second hand|pre-owned|preowned)\b',
+                r'\b(seminuevo|semi-nuevo|like new|como nuevo)\b',
+                r'\b(estado bueno|good condition|funcionando|working)\b',
+                r'\b(para repuesto|for parts|spare parts)\b'  # ¡NUEVO PATRÓN!
+            ]
+            
+            # Patrones para condición REACONDICIONADA
+            refurbished_patterns = [
+                r'\b(reacondicionado|refurbished|remanufactured|restored)\b',
+                r'\b(reparado|repaired|rebuilt|reconstruido)\b',
+                r'\b(garantía limitada|limited warranty|reconditioned)\b'
+            ]
+            
+            # Buscar coincidencias
+            new_matches = sum(len(re.findall(pattern, text_to_analyze)) for pattern in new_patterns)
+            used_matches = sum(len(re.findall(pattern, text_to_analyze)) for pattern in used_patterns)
+            refurbished_matches = sum(len(re.findall(pattern, text_to_analyze)) for pattern in refurbished_patterns)
+            
+            # 4. PRIORIZAR CONDICIÓN DEL BADGE SI EXISTE
+            if condition_from_badge:
+                if any(word in condition_from_badge for word in ['usado', 'used']):
+                    print(f"✅ Condición detectada desde badge: Usado (Confianza: Muy Alta)")
+                    return "Usado"
+                elif any(word in condition_from_badge for word in ['nuevo', 'new']):
+                    print(f"✅ Condición detectada desde badge: Nuevo (Confianza: Muy Alta)")
+                    return "Nuevo"
+                elif any(word in condition_from_badge for word in ['reacondicionado', 'refurbished']):
+                    print(f"✅ Condición detectada desde badge: Reacondicionado (Confianza: Muy Alta)")
+                    return "Reacondicionado"
+            
+            # 5. ANÁLISIS POR PATRONES SI NO HAY BADGE
+            if new_matches > 0 and new_matches > used_matches and new_matches > refurbished_matches:
+                condition = "Nuevo"
+                confidence = "Alta"
+            elif used_matches > 0 and used_matches > new_matches and used_matches > refurbished_matches:
+                condition = "Usado"
+                confidence = "Alta"
+            elif refurbished_matches > 0 and refurbished_matches > new_matches and refurbished_matches > used_matches:
+                condition = "Reacondicionado"
+                confidence = "Alta"
+            else:
+                # Análisis adicional basado en contexto
+                if any(word in text_to_analyze for word in ['oferta', 'descuento', 'liquidación']):
+                    condition = "Nuevo (Probable)"
+                    confidence = "Media"
+                elif any(word in text_to_analyze for word in ['cuotas', 'financiación', 'tarjeta']):
+                    condition = "Nuevo (Probable)"
+                    confidence = "Media"
+                else:
+                    condition = "No especificada"
+                    confidence = "Baja"
+            
+            print(f"Condición detectada por patrones: {condition} (Confianza: {confidence})")
+            return condition
+            
+        except Exception as e:
+            print(f"Error detectando condición avanzada: {e}")
+            return "No especificada"
+    
     def _extract_products(self, soup):
         """Extraer productos de la página"""
         products = []
@@ -117,6 +217,10 @@ class MercadoLibreScraper:
                     product['price_text'] = price_text
                     product['price'] = self._clean_price(price_text)
                 
+                # Condición - DETECCIÓN INTELIGENTE EN MÚLTIPLES LUGARES
+                condition = self._detect_condition_advanced(container, product.get('title', ''), product.get('price_text', ''))
+                product['condition'] = condition
+                
                 # URL - SELECTOR EXACTO
                 link_elem = container.select_one("a.poly-component__title")
                 if link_elem:
@@ -129,6 +233,7 @@ class MercadoLibreScraper:
                     print(f"Producto encontrado: {product.get('title', '')[:50]}...")
                     print(f"  Precio: {product.get('price_text', 'N/A')[:30]}")
                     print(f"  Precio limpio: {product.get('price', 'N/A')}")
+                    print(f"  Condición: {product.get('condition', 'N/A')}")
                     
             except Exception as e:
                 print(f"Error procesando producto: {e}")
@@ -136,8 +241,8 @@ class MercadoLibreScraper:
         
         return products
     
-    def search_products(self, query, max_pages=3, min_price=None, max_price=None, sort_by="relevance"):
-        """Buscar productos"""
+    def search_products(self, query, max_pages=3, min_price=None, max_price=None, sort_by="relevance", condition_filter="all"):
+        """Buscar productos con filtros de precio y condición"""
         all_products = []
         
         for page in range(1, max_pages + 1):
@@ -175,20 +280,28 @@ class MercadoLibreScraper:
                 print(f"Error en página {page}: {e}")
                 continue
         
-        # Aplicar filtros de precio
-        if min_price or max_price:
-            filtered_products = []
-            for product in all_products:
-                price = product.get('price')
-                if price:
-                    if min_price and price < min_price:
-                        continue
-                    if max_price and price > max_price:
-                        continue
-                    filtered_products.append(product)
-            all_products = filtered_products
+        # Aplicar filtros de precio y condición
+        filtered_products = []
+        for product in all_products:
+            # Filtro de precio
+            price = product.get('price')
+            if min_price and price and price < min_price:
+                continue
+            if max_price and price and price > max_price:
+                continue
+            
+            # Filtro de condición
+            if condition_filter != "all":
+                product_condition = product.get('condition', '').lower()
+                if condition_filter not in product_condition:
+                    continue
+            
+            filtered_products.append(product)
         
-        print(f"\nTotal productos: {len(all_products)}")
+        all_products = filtered_products
+        
+        print(f"\nTotal productos después de filtros: {len(all_products)}")
+        print(f"Filtros aplicados: Precio({min_price or 'sin límite'}-{max_price or 'sin límite'}), Condición({condition_filter})")
         return all_products
     
     def export_to_csv(self, products, filename="productos.csv"):

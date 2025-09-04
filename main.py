@@ -72,25 +72,34 @@ class MercadoLibreGUI:
                                  values=["relevance", "price_asc", "price_desc"], width=15)
         sort_combo.grid(row=0, column=5)
         
+        # Filtro de Condición
+        ttk.Label(filters_frame, text="Condición:").grid(row=0, column=6, sticky=tk.W, padx=(10, 5))
+        self.condition_var = tk.StringVar(value="all")
+        condition_combo = ttk.Combobox(filters_frame, textvariable=self.condition_var, 
+                                      values=["all", "nuevo", "usado", "reacondicionado"], width=15)
+        condition_combo.grid(row=0, column=7)
+        
         # Frame de resultados
         results_frame = ttk.LabelFrame(main_frame, text="Resultados", padding="10")
         results_frame.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
         results_frame.columnconfigure(0, weight=1)
         results_frame.rowconfigure(0, weight=1)
         
-        # Treeview para resultados (SOLO 3 COLUMNAS ÚTILES)
-        columns = ("Titulo", "Precio", "URL")
+        # Treeview para resultados (4 COLUMNAS: Título, Precio, Condición, URL)
+        columns = ("Titulo", "Precio", "Condicion", "URL")
         self.tree = ttk.Treeview(results_frame, columns=columns, show="headings", height=15)
         
         # Configurar columnas
         self.tree.heading("Titulo", text="Título del Producto")
         self.tree.heading("Precio", text="Precio")
+        self.tree.heading("Condicion", text="Condición")
         self.tree.heading("URL", text="Enlace")
         
         # Configurar ancho de columnas
-        self.tree.column("Titulo", width=400)
-        self.tree.column("Precio", width=150)
-        self.tree.column("URL", width=300)
+        self.tree.column("Titulo", width=350)
+        self.tree.column("Precio", width=120)
+        self.tree.column("Condicion", width=120)
+        self.tree.column("URL", width=250)
         
         # Scrollbar
         scrollbar = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.tree.yview)
@@ -145,6 +154,7 @@ class MercadoLibreGUI:
             min_price = self.min_price_var.get().strip()
             max_price = self.max_price_var.get().strip()
             sort_by = self.sort_var.get()
+            condition_filter = self.condition_var.get()
             
             # Convertir precios a números
             min_price = int(min_price) if min_price else None
@@ -156,7 +166,8 @@ class MercadoLibreGUI:
                 max_pages=max_pages,
                 min_price=min_price,
                 max_price=max_price,
-                sort_by=sort_by
+                sort_by=sort_by,
+                condition_filter=condition_filter
             )
             
             # Actualizar interfaz en hilo principal
@@ -182,7 +193,7 @@ class MercadoLibreGUI:
         messagebox.showerror("Error", f"Error durante la búsqueda:\n{error_msg}")
     
     def update_results(self):
-        """Actualizar tabla de resultados (SOLO 3 COLUMNAS)"""
+        """Actualizar tabla de resultados (4 COLUMNAS: Título, Precio, Condición, URL)"""
         # Limpiar tabla
         for item in self.tree.get_children():
             self.tree.delete(item)
@@ -191,8 +202,8 @@ class MercadoLibreGUI:
         for product in self.products:
             # Título (truncado si es muy largo)
             title = product.get('title', '')
-            if len(title) > 60:
-                title = title[:57] + "..."
+            if len(title) > 50:
+                title = title[:47] + "..."
             
             # Precio (formateado correctamente)
             price = product.get('price', 0)
@@ -201,15 +212,18 @@ class MercadoLibreGUI:
             else:
                 price_display = "N/A"
             
+            # Condición (mostrar tal como está)
+            condition = product.get('condition', 'N/A')
+            
             # URL (truncada para mostrar)
             url = product.get('url', '')
-            if len(url) > 50:
-                url_display = url[:47] + "..."
+            if len(url) > 40:
+                url_display = url[:37] + "..."
             else:
                 url_display = url
             
-            # Insertar en la tabla (SOLO 3 VALORES)
-            self.tree.insert("", tk.END, values=(title, price_display, url_display))
+            # Insertar en la tabla (4 VALORES: Título, Precio, Condición, URL)
+            self.tree.insert("", tk.END, values=(title, price_display, condition, url_display))
     
     def export_results(self, format_type):
         """Exportar resultados"""

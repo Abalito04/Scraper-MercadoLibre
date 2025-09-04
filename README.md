@@ -57,6 +57,7 @@ python scraper.py
 - **Término**: Cualquier producto (notebook, celular, etc.)
 - **Páginas**: Hasta 10 páginas (configurable)
 - **Filtros**: Precio mínimo y máximo
+- **Condición**: Nuevo, Usado, Reacondicionado, o Todos
 - **Orden**: Relevancia, precio ↑↓
 
 ### 💾 Exportación
@@ -82,13 +83,22 @@ products = scraper.search_products(
 )
 ```
 
-### Con Filtros de Precio
+### Con Filtros de Precio y Condición
 ```python
+# Solo productos usados
 products = scraper.search_products(
-    query="celular",
+    query="notebook",
     max_pages=2,
     min_price=50000,
-    max_price=200000
+    max_price=200000,
+    condition_filter="usado"
+)
+
+# Solo productos nuevos
+products = scraper.search_products(
+    query="celular",
+    max_pages=3,
+    condition_filter="nuevo"
 )
 ```
 
@@ -176,9 +186,9 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
 ## 📞 Contacto
 
-- **GitHub**: [@tu-usuario](https://github.com/tu-usuario)
-- **Email**: tu-email@ejemplo.com
-- **Proyecto**: [Link al proyecto](https://github.com/tu-usuario/scraper-mercadolibre)
+- **GitHub**: [@Abalito04](https://github.com/Abalito04)
+- **Email**: abalito95@gmail.com
+- **Proyecto**: [Link al proyecto](https://github.com/Abalito04/Scraper-MercadoLibre)
 
 ---
 
