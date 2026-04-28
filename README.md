@@ -1,195 +1,126 @@
-# 🚀 Scraper MercadoLibre Argentina
+# 🔍 MercadoLibre Scraper
 
-**Scraper profesional** para extraer productos de MercadoLibre Argentina usando **requests + BeautifulSoup** con interfaz gráfica **Tkinter**.
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![BeautifulSoup](https://img.shields.io/badge/BeautifulSoup4-4.12-brightgreen?style=flat-square)](https://www.crummy.com/software/BeautifulSoup/)
+[![Pandas](https://img.shields.io/badge/Pandas-2.0-150458?style=flat-square&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-## ✨ Características
+> **EN:** A Python tool that automatically scrapes product listings from [MercadoLibre](https://www.mercadolibre.com.ar/) and exports the results to a clean Excel/CSV file ready for analysis.
+>
+> **ES:** Herramienta en Python que extrae automáticamente publicaciones de [MercadoLibre](https://www.mercadolibre.com.ar/) y exporta los resultados a un archivo Excel/CSV listo para analizar.
 
-- 🔍 **Búsqueda inteligente**: Extrae productos por término de búsqueda
-- 💰 **Filtros de precio**: Rango mínimo y máximo personalizable
-- 📊 **Ordenamiento**: Por relevancia, precio ascendente/descendente
-- 💾 **Exportación múltiple**: CSV, Excel (XLSX) y JSON
-- 🎨 **Interfaz gráfica**: Tkinter moderno y fácil de usar
-- 🚫 **Sin Selenium**: Usa requests + BeautifulSoup (más estable)
-- 🇦🇷 **Formato argentino**: Maneja precios con separadores de miles
+---
 
-## 🛠️ Tecnologías
+## ✨ Features · Características
 
-- **Python 3.8+**
-- **requests**: HTTP requests
-- **BeautifulSoup4**: Parsing HTML
-- **pandas**: Manipulación de datos
-- **openpyxl**: Exportación a Excel
-- **Tkinter**: Interfaz gráfica
+- ✅ Scrapes **product titles, prices, links, and seller info** from search results
+- ✅ Supports **pagination** — scrapes multiple pages automatically
+- ✅ Exports clean data to **Excel (.xlsx) and CSV**
+- ✅ Built-in **duplicate removal** and data cleaning
+- ✅ Simple CLI interface — just enter a search keyword
+- ✅ Respects rate limits with request delays
 
-## 📦 Instalación
+---
 
-### 1. Clonar repositorio
+## 📸 Example Output · Ejemplo de salida
+
+| Title | Price (ARS) | Link | Seller |
+|-------|------------|------|--------|
+| Casco Moto LS2 FF320 | $ 85,000 | mercadolibre.com/... | TiendaMotos |
+| Casco Bell MX-9 | $ 120,000 | mercadolibre.com/... | HelmetsPro |
+| ... | ... | ... | ... |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.8+
+- pip
+
+### Installation
+
 ```bash
-git clone https://github.com/tu-usuario/scraper-mercadolibre.git
-cd scraper-mercadolibre
+# 1. Clone the repo
+git clone https://github.com/Abalito04/Scraper-MercadoLibre.git
+cd Scraper-MercadoLibre
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Run the scraper
+python main.py
 ```
 
-### 2. Instalar dependencias
+### Usage
+
+```bash
+$ python main.py
+
+🔍 Enter search keyword: casco moto
+📄 How many pages to scrape? [default: 5]: 3
+
+⏳ Scraping page 1...
+⏳ Scraping page 2...
+⏳ Scraping page 3...
+
+✅ Done! 147 products found.
+💾 Saved to: casco_moto_2025-09-04.xlsx
+```
+
+---
+
+## 📦 Dependencies
+
+```
+requests==2.31.0
+beautifulsoup4==4.12.2
+pandas==2.0.3
+openpyxl==3.1.2
+lxml==4.9.3
+urllib3==2.0.7
+```
+
+Install all at once:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Ejecutar
-```bash
-python main.py
-```
+---
 
-## 🚀 Uso
-
-### Interfaz Gráfica (Recomendado)
-```bash
-python main.py
-```
-
-### Línea de Comandos
-```bash
-python scraper.py
-```
-
-## 📋 Funcionalidades
-
-### 🔍 Búsqueda
-- **Término**: Cualquier producto (notebook, celular, etc.)
-- **Páginas**: Hasta 10 páginas (configurable)
-- **Filtros**: Precio mínimo y máximo
-- **Condición**: Nuevo, Usado, Reacondicionado, o Todos
-- **Orden**: Relevancia, precio ↑↓
-
-### 💾 Exportación
-- **CSV**: Formato estándar con encoding UTF-8
-- **Excel**: Archivo .xlsx con formato profesional
-- **JSON**: Estructura de datos completa
-
-### 📊 Datos Extraídos
-- **Título**: Nombre completo del producto
-- **Precio**: Precio limpio en pesos argentinos
-- **URL**: Enlace directo al producto
-
-## 🎯 Ejemplos de Uso
-
-### Búsqueda Básica
-```python
-from scraper import MercadoLibreScraper
-
-scraper = MercadoLibreScraper()
-products = scraper.search_products(
-    query="notebook",
-    max_pages=3
-)
-```
-
-### Con Filtros de Precio y Condición
-```python
-# Solo productos usados
-products = scraper.search_products(
-    query="notebook",
-    max_pages=2,
-    min_price=50000,
-    max_price=200000,
-    condition_filter="usado"
-)
-
-# Solo productos nuevos
-products = scraper.search_products(
-    query="celular",
-    max_pages=3,
-    condition_filter="nuevo"
-)
-```
-
-### Exportación
-```python
-# CSV
-scraper.export_to_csv(products, "productos.csv")
-
-# Excel
-scraper.export_to_csv(products, "productos.xlsx")
-```
-
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 ```
-scraper-mercadolibre/
-├── main.py              # Interfaz gráfica Tkinter
-├── scraper.py           # Lógica del scraper
-├── requirements.txt     # Dependencias Python
-├── README.md           # Este archivo
-└── .gitignore          # Archivos a ignorar
+Scraper-MercadoLibre/
+├── main.py              # Entry point — CLI interface
+├── scraper.py           # Core scraping logic
+├── requirements.txt     # Python dependencies
+├── .gitignore
+└── README.md
 ```
-
-## 🔧 Configuración
-
-### Headers Personalizados
-```python
-self.session.headers.update({
-    'User-Agent': 'Tu User-Agent personalizado',
-    'Accept-Language': 'es-AR,es;q=0.8,en-US;q=0.5,en;q=0.3',
-})
-```
-
-### Delays Configurables
-```python
-# Delay entre páginas (1-3 segundos)
-delay = random.uniform(1, 3)
-time.sleep(delay)
-```
-
-## ⚠️ Consideraciones
-
-- **Respeto**: Usar delays razonables entre requests
-- **Términos de Servicio**: Cumplir con las políticas de MercadoLibre
-- **Uso Responsable**: No sobrecargar los servidores
-- **Propósito Educativo**: Solo para aprendizaje y uso personal
-
-## 🐛 Solución de Problemas
-
-### Error de Codificación
-```bash
-# En Windows, usar encoding UTF-8
-python -X utf8 main.py
-```
-
-### Dependencias Faltantes
-```bash
-pip install --upgrade -r requirements.txt
-```
-
-### Problemas de Red
-- Verificar conexión a internet
-- Revisar firewall/antivirus
-- Usar VPN si es necesario
-
-## 🤝 Contribuciones
-
-¡Las contribuciones son bienvenidas! 
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
-
-## 🙏 Agradecimientos
-
-- **MercadoLibre**: Por proporcionar la plataforma
-- **BeautifulSoup**: Por el excelente parser HTML
-- **Python Community**: Por las librerías increíbles
-
-## 📞 Contacto
-
-- **GitHub**: [@Abalito04](https://github.com/Abalito04)
-- **Email**: abalito95@gmail.com
-- **Proyecto**: [Link al proyecto](https://github.com/Abalito04/Scraper-MercadoLibre)
 
 ---
 
-⭐ **¡Si te gusta el proyecto, dale una estrella en GitHub!** ⭐
+## 🔧 How It Works · Cómo funciona
+
+1. **User inputs** a search keyword and number of pages
+2. **`scraper.py`** sends HTTP requests to MercadoLibre search results
+3. **BeautifulSoup** parses the HTML and extracts product data
+4. **Pandas** cleans, deduplicates and structures the data
+5. **Output** is exported to `.xlsx` and `.csv` with timestamp in filename
+
+---
+
+## 📌 Notes
+
+- This scraper is intended for **personal and educational use only**
+- MercadoLibre's structure may change over time and require selector updates
+- Add delays between requests to avoid getting rate-limited
+
+---
+
+## 👨‍💻 Author
+
+**Matias Abalo** — [@Abalito04](https://github.com/Abalito04)
+
+🌐 [Portfolio](https://matiabalo.up.railway.app/) · ✉️ [abalito95@gmail.com](mailto:abalito95@gmail.com)
